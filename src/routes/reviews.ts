@@ -4,10 +4,23 @@ import { supabase } from '../services/supabase';
 
 const router = express.Router();
 
+// backend/src/routes/reviews.ts
 router.get('/:restaurantId', async (req, res) => {
-    const { data, error } = await supabase.from('reviews').select('*, profiles(username)').eq('restaurantId', req.params.restaurantId).order('created_at', { ascending: false }).limit(50);
-    if (error) return res.status(500).json({error});
-    res.json(data);
+  const { restaurantId } = req.params;
+  console.log('Fetching reviews for restaurant ID:', restaurantId);
+
+  const { data, error } = await supabase
+    .from('reviews')
+    .select('*, profiles(username)')
+    .eq('restaurant_id', restaurantId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Supabase error in GET /reviews:', error);
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json(data || []);
 });
 
 router.post('/', authenticate, async (req, res) => {
